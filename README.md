@@ -5,7 +5,7 @@ Topster-style charts for Geometry Dash levels.
 ## Local development
 
 ```sh
-npm run dev
+node .\server.js
 ```
 
 Open http://localhost:3000. lmao what else is there
