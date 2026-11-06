@@ -1,13 +1,12 @@
 const http = require("node:http");
-const https = require("node:https");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
+const searchHandler = require("./api/gd/search");
+const levelsHandler = require("./api/gd/levels");
+
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT) || 3000;
-const UPSTREAM = "https://www.boomlings.com/database/getGJLevels21.php";
-const SECRET = "Wmfd2893gb7";
-const MAX_QUERY_LENGTH = 100;
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -30,137 +29,6 @@ function sendJson(response, status, payload) {
     "Cache-Control": "no-store",
   });
   response.end(body);
-}
-
-function sanitizeQuery(value) {
-  return String(value || "")
-    .replace(/['’`]/g, "")
-    .replace(/[^A-Za-z0-9 ,\-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, MAX_QUERY_LENGTH);
-}
-
-function clampInt(value, min, max, fallback) {
-  const number = Number.parseInt(value, 10);
-  if (!Number.isFinite(number)) return fallback;
-  return Math.min(max, Math.max(min, number));
-}
-
-function postUpstream(body) {
-  return new Promise((resolve, reject) => {
-    const payload = body.toString();
-    const request = https.request(
-      UPSTREAM,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Content-Length": Buffer.byteLength(payload),
-          // Deliberately no User-Agent: boomlings rejects normal browser UAs
-          // behind Cloudflare, and Node does not add one by default.
-        },
-      },
-      (upstream) => {
-        let text = "";
-        upstream.setEncoding("utf8");
-        upstream.on("data", (chunk) => {
-          text += chunk;
-        });
-        upstream.on("end", () => {
-          resolve({ status: upstream.statusCode ?? 502, text });
-        });
-      },
-    );
-
-    request.on("error", reject);
-    request.setTimeout(10_000, () => {
-      request.destroy(new Error("Upstream request timed out"));
-    });
-    request.end(payload);
-  });
-}
-
-async function forwardLevels(body, response) {
-  try {
-    const upstream = await postUpstream(body);
-    if (upstream.status !== 200) {
-      sendJson(response, 502, {
-        error: "upstream_status",
-        status: upstream.status,
-        message: "The Geometry Dash server rejected the request.",
-      });
-      return;
-    }
-
-    response.writeHead(200, {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "public, max-age=60",
-    });
-    response.end(upstream.text);
-  } catch (error) {
-    console.error("Upstream request failed:", error.message);
-    sendJson(response, 502, {
-      error: "upstream_unreachable",
-      message: "Could not reach the Geometry Dash server.",
-    });
-  }
-}
-
-function handleSearch(url, response) {
-  const query = sanitizeQuery(url.searchParams.get("q"));
-  if (!query) {
-    sendJson(response, 400, {
-      error: "missing_query",
-      message: "A search query is required.",
-    });
-    return;
-  }
-
-  const page = clampInt(url.searchParams.get("page"), 0, 50, 0);
-  const body = new URLSearchParams({
-    secret: SECRET,
-    type: "0",
-    str: query,
-    page: String(page),
-  });
-
-  if (url.searchParams.get("rated") === "1") body.set("star", "1");
-
-  const length = clampInt(url.searchParams.get("len"), 0, 5, null);
-  if (length !== null) body.set("len", String(length));
-
-  const difficulty = clampInt(url.searchParams.get("diff"), -2, 5, null);
-  if (difficulty !== null) body.set("diff", String(difficulty));
-
-  const demonFilter = clampInt(url.searchParams.get("demonFilter"), 1, 5, null);
-  if (demonFilter !== null) body.set("demonFilter", String(demonFilter));
-
-  forwardLevels(body, response);
-}
-
-function handleLevels(url, response) {
-  const ids = String(url.searchParams.get("ids") || "")
-    .split(",")
-    .map((id) => id.trim())
-    .filter((id) => /^\d+$/.test(id))
-    .slice(0, 25);
-
-  if (ids.length === 0) {
-    sendJson(response, 400, {
-      error: "missing_ids",
-      message: "One or more numeric level IDs are required.",
-    });
-    return;
-  }
-
-  const body = new URLSearchParams({
-    secret: SECRET,
-    type: "10",
-    str: ids.join(","),
-  });
-
-  forwardLevels(body, response);
 }
 
 async function serveStatic(url, response) {
@@ -206,13 +74,14 @@ const server = http.createServer((request, response) => {
     return;
   }
 
+  // Mount the same handlers that Vercel exposes under /api/gd.
   if (url.pathname === "/api/gd/search") {
-    handleSearch(url, response);
+    searchHandler(request, response);
     return;
   }
 
   if (url.pathname === "/api/gd/levels") {
-    handleLevels(url, response);
+    levelsHandler(request, response);
     return;
   }
 
