@@ -178,7 +178,6 @@
       button.setAttribute("aria-label", label);
 
       const image = document.createElement("img");
-      image.src = level.thumb;
       image.alt = "";
       image.loading = "lazy";
       image.decoding = "async";
@@ -186,6 +185,25 @@
 
       let dragged = false;
       let pointerDragAt = 0;
+
+      image.addEventListener("error", () => {
+        image.remove();
+        button.classList.add("is-missing");
+
+        const missing = document.createElement("span");
+        missing.className = "sidebar-addlvl-result-missing";
+
+        const missingName = document.createElement("span");
+        missingName.className = "sidebar-addlvl-result-missing-name";
+        missingName.textContent = level.name || "Level";
+
+        const missingAuthor = document.createElement("span");
+        missingAuthor.className = "sidebar-addlvl-result-missing-author";
+        missingAuthor.textContent = level.author || "Unknown";
+
+        missing.append(missingName, missingAuthor);
+        button.replaceChildren(missing);
+      });
 
       button.addEventListener("pointerdown", (event) => {
         if (event.pointerType === "mouse") return;
@@ -237,7 +255,20 @@
       image.addEventListener("error", () => {
         image.remove();
         button.classList.add("is-missing");
-        button.textContent = level.name;
+
+        const missing = document.createElement("span");
+        missing.className = "sidebar-addlvl-result-missing";
+
+        const missingName = document.createElement("span");
+        missingName.className = "sidebar-addlvl-result-missing-name";
+        missingName.textContent = level.name || "Level";
+
+        const missingAuthor = document.createElement("span");
+        missingAuthor.className = "sidebar-addlvl-result-missing-author";
+        missingAuthor.textContent = level.author || "Unknown";
+
+        missing.append(missingName, missingAuthor);
+        button.replaceChildren(missing);
       });
 
       const caption = document.createElement("span");
@@ -255,6 +286,7 @@
       caption.append(nameLine, authorLine);
       button.appendChild(image);
       button.appendChild(caption);
+      image.src = level.thumb;
       fragment.appendChild(button);
     }
 

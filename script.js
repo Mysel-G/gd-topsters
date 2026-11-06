@@ -527,7 +527,6 @@
 
     if (source) {
       const image = document.createElement("img");
-      image.src = source;
       image.alt = itemLabel(item);
       image.draggable = false;
       image.loading = "lazy";
@@ -538,6 +537,7 @@
         media.classList.add("grid-cell-media--missing");
         media.appendChild(createMissingThumbnail(item));
       });
+      image.src = source;
       media.appendChild(image);
     } else {
       media.classList.add("grid-cell-media--missing");
@@ -587,7 +587,16 @@
   function createMissingThumbnail(item) {
     const fallback = document.createElement("span");
     fallback.className = "grid-cell-fallback";
-    fallback.textContent = item.name || "No thumbnail";
+
+    const name = document.createElement("span");
+    name.className = "grid-cell-fallback-name";
+    name.textContent = item.name || "No thumbnail";
+
+    const author = document.createElement("span");
+    author.className = "grid-cell-fallback-author";
+    author.textContent = item.author || "Unknown";
+
+    fallback.append(name, author);
     return fallback;
   }
 

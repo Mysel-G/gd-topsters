@@ -334,6 +334,25 @@ h3 {
   word-break: break-word;
 }
 
+.sidebar-addlvl-result-missing {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  width: 100%;
+}
+
+.sidebar-addlvl-result-missing-name {
+  font-size: 0.65rem;
+  line-height: 1.1;
+}
+
+.sidebar-addlvl-result-missing-author {
+  font-size: 0.58rem;
+  line-height: 1.1;
+  opacity: 0.75;
+}
+
 .sidebar-addlvl-result > .sidebar-addlvl-status {
   width: auto;
   aspect-ratio: auto;
@@ -826,8 +845,13 @@ input[type="range"]::-moz-range-progress {
 }
 
 .grid-cell-fallback {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
   width: 100%;
+  height: 100%;
   padding: 10px;
   overflow: hidden;
   color: #fff;
@@ -835,6 +859,16 @@ input[type="range"]::-moz-range-progress {
   line-height: 1.25;
   text-align: center;
   word-break: break-word;
+}
+
+.grid-cell-fallback-name {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.grid-cell-fallback-author {
+  font-size: 9px;
+  opacity: 0.75;
 }
 
 .grid-row-labels {
