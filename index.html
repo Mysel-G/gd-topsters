@@ -66,6 +66,23 @@
             aria-labelledby="tab-add-level"
             data-panel="add-level"
           >
+            <div class="sidebar-option">
+              <p>Allow Unrated Levels</p>
+              <input
+                type="checkbox"
+                class="sidebar-options-allow-unrated-checkbox"
+                aria-label="Allow unrated levels"
+              />
+              <p
+                class="sidebar-option-note sidebar-options-allow-unrated-warning"
+                hidden
+              >
+                Note: Some unrated levels may not have images, resulting in
+                using a placeholder asset. Please upload your own image to
+                replace the placeholder. None of your uploaded images goes
+                outside your current tab.
+              </p>
+            </div>
             <div class="sidebar-addlvl-form">
               <input
                 type="text"
@@ -147,6 +164,6 @@
     </section>
 
     <script src="script.js"></script>
-    <script src="fetch-level.js"></script>
+    <script src="fetch-lvl.js"></script>
   </body>
 </html>

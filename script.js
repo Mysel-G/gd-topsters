@@ -8,6 +8,12 @@
   const widthRange = document.querySelector(".sidebar-options-width-range");
   const heightValue = document.querySelector(".sidebar-options-height-value");
   const widthValue = document.querySelector(".sidebar-options-width-value");
+  const unratedLevelsCheckbox = document.querySelector(
+    ".sidebar-options-allow-unrated-checkbox",
+  );
+  const unratedLevelsWarning = document.querySelector(
+    ".sidebar-options-allow-unrated-warning",
+  );
 
   const MIN_COLS = 1;
   const MAX_COLS = 12;
@@ -18,6 +24,10 @@
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
+  }
+
+  function syncUnratedWarning() {
+    unratedLevelsWarning.hidden = !unratedLevelsCheckbox.checked;
   }
 
   function activateTab(name) {
@@ -105,6 +115,8 @@
   heightRange.addEventListener("input", renderGrid);
   widthRange.addEventListener("input", renderGrid);
 
+  unratedLevelsCheckbox.addEventListener("change", syncUnratedWarning);
+
   grid.addEventListener("click", (event) => {
     const cell = event.target.closest(".grid-cell-empty");
     if (!cell) return;
@@ -120,6 +132,7 @@
   if (observer) observer.observe(gridArea);
   window.addEventListener("resize", updateTileSize);
 
+  syncUnratedWarning();
   activateTab("add-level");
   renderGrid();
 })();
