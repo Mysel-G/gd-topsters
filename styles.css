@@ -479,7 +479,7 @@ input[type="range"]::-moz-range-progress {
 .main-grid {
   --cols: 5;
   --rows: 5;
-  --label-width: 240px;
+  --label-width: 0px;
   --action-size: clamp(20px, calc(var(--tile) * 0.28), 30px);
   /* 
      fit 5x5 chart
@@ -494,16 +494,9 @@ input[type="range"]::-moz-range-progress {
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--cols), var(--tile)) var(--label-width);
-  grid-auto-rows: var(--tile);
+  grid-auto-rows: auto;
   gap: var(--grid-gap);
   width: max-content;
-  min-width: calc(
-    var(--cols) * (var(--tile) + var(--grid-gap)) + var(--label-width) + 2 *
-      var(--grid-gap)
-  );
-  min-height: calc(
-    var(--rows) * (var(--tile) + var(--grid-gap)) + var(--grid-gap)
-  );
   margin: 0 auto;
   padding: var(--grid-gap);
   background: #000;
@@ -617,19 +610,20 @@ input[type="range"]::-moz-range-progress {
 
 .grid-row-labels {
   display: flex;
+  width: max-content;
   min-width: 0;
   padding: 0 2px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .grid-row-label-list {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  width: 100%;
+  width: max-content;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   font-family: monospace;
   text-shadow: rgba(0, 0, 0, 0.6) 2px 2px 4px;
   color: rgb(255, 255, 255);
@@ -752,15 +746,12 @@ body:has(.sidebar-options-rounded-corners-checkbox:checked) .main-grid {
   .main-grid {
     /* The sidebar is below the chart at <= 1000px */
     --tile: clamp(120px, calc((100vw - 140px) / 5), 220px);
-    --label-width: 180px;
   }
 }
 
 @media (max-width: 600px) {
   .main-grid {
     --tile: 140px;
-    --grid-gap: 10px;
-    --label-width: 130px;
   }
 
   .sidebar-addlvl-result {

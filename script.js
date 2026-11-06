@@ -173,8 +173,20 @@
     const { cols, rows } = getGridSize();
     const gridStyle = getComputedStyle(grid);
     const gap = Number.parseFloat(gridStyle.getPropertyValue("--grid-gap")) || 20;
-    const labelWidth =
-      Number.parseFloat(gridStyle.getPropertyValue("--label-width")) || 0;
+    const labelCell = grid.querySelector(".grid-row-labels");
+    const labelPadding = labelCell
+      ? Number.parseFloat(getComputedStyle(labelCell).paddingLeft) +
+        Number.parseFloat(getComputedStyle(labelCell).paddingRight)
+      : 0;
+    let labelTextWidth = 0;
+    for (const list of grid.querySelectorAll(".grid-row-label-list")) {
+      labelTextWidth = Math.max(labelTextWidth, list.scrollWidth);
+    }
+    const labelWidth = labelTextWidth
+      ? Math.ceil(labelTextWidth + labelPadding)
+      : 0;
+
+    grid.style.setProperty("--label-width", `${labelWidth}px`);
 
     const areaStyle = getComputedStyle(gridArea);
     const padX =
@@ -195,6 +207,10 @@
     );
 
     grid.style.setProperty("--tile", `${Math.floor(tile * 100) / 100}px`);
+    grid.style.gridTemplateColumns = `${Array.from(
+      { length: cols },
+      () => `${tile}px`,
+    ).join(" ")} ${labelWidth}px`;
   }
 
   function renderGrid() {
@@ -262,6 +278,8 @@
     cell.className = "grid-row-labels";
     cell.setAttribute("role", "group");
     cell.setAttribute("aria-label", `Row ${row + 1} level labels`);
+
+    if (!items.some(Boolean)) return cell;
 
     const list = document.createElement("ol");
     list.className = "grid-row-label-list";
