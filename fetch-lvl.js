@@ -240,7 +240,21 @@
         button.textContent = level.name;
       });
 
+      const caption = document.createElement("span");
+      caption.className = "sidebar-addlvl-result-caption";
+      caption.setAttribute("aria-hidden", "true");
+
+      const nameLine = document.createElement("span");
+      nameLine.className = "sidebar-addlvl-result-name";
+      nameLine.textContent = level.name || "Level";
+
+      const authorLine = document.createElement("span");
+      authorLine.className = "sidebar-addlvl-result-author";
+      authorLine.textContent = level.author || "Unknown";
+
+      caption.append(nameLine, authorLine);
       button.appendChild(image);
+      button.appendChild(caption);
       fragment.appendChild(button);
     }
 
