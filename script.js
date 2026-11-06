@@ -24,6 +24,7 @@
   const saveDataButton = document.querySelector(".sidebar-save-data-btn");
   const importDataButton = document.querySelector(".sidebar-import-data-btn");
   const exportPngButton = document.querySelector(".sidebar-export-png-btn");
+  const resetGridButton = document.querySelector(".sidebar-reset-btn");
   const importFileInput = document.querySelector(".sidebar-import-file");
 
   const STORAGE_KEY = "gdtopster.grid.v1";
@@ -45,6 +46,7 @@
 
   let saveTimer = null;
   let toastTimer = null;
+  let layoutFrame = 0;
 
   const UPLOAD_ICON = `
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
@@ -237,6 +239,16 @@
     grid.classList.add("is-scaled");
   }
 
+  function scheduleChartLayout() {
+    cancelAnimationFrame(layoutFrame);
+    layoutFrame = requestAnimationFrame(() => {
+      layoutFrame = requestAnimationFrame(() => {
+        updateGridGeometry();
+        updateChartScale();
+      });
+    });
+  }
+
   function renderGrid() {
     const { cols, rows } = getGridSize();
     state.cols = cols;
@@ -272,6 +284,7 @@
     grid.replaceChildren(fragment);
     updateGridGeometry();
     updateChartScale();
+    scheduleChartLayout();
     saveState();
   }
 
@@ -794,6 +807,34 @@
     renderGrid();
   }
 
+  function resetGrid() {
+    if (
+      !window.confirm(
+        "Reset the entire grid to its default settings? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    state.title = "";
+    state.cols = 5;
+    state.rows = 5;
+    state.swapNames = false;
+    state.rounded = false;
+    state.items = [];
+    ensureItemCapacity();
+    syncControlsFromState();
+
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // The in-memory reset still stands if storage is unavailable.
+    }
+
+    renderGrid();
+    toast("Grid reset.");
+  }
+
   function waitForImage(image) {
     if (image.complete) return Promise.resolve();
     return new Promise((resolve) => {
@@ -964,6 +1005,10 @@
 
   if (exportPngButton) {
     exportPngButton.addEventListener("click", exportPng);
+  }
+
+  if (resetGridButton) {
+    resetGridButton.addEventListener("click", resetGrid);
   }
 
   const observer =
