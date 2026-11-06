@@ -15,6 +15,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
   </head>
 
   <body class="main">
@@ -23,33 +24,70 @@
         <div class="sidebar-header">
           <h1>GD Topster</h1>
         </div>
-        <ul class="sidebar-action-list">
-          <li class="sidebar-action-item sidebar-action-item-active">
-            <button class="sidebar-action-btn sidebar-action-btn-active">
+
+        <ul
+          class="sidebar-action-list"
+          role="tablist"
+          aria-label="Sidebar tabs"
+        >
+          <li class="sidebar-action-item" role="presentation">
+            <button
+              id="tab-add-level"
+              type="button"
+              class="sidebar-action-btn sidebar-action-btn-active"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panel-add-level"
+              data-tab="add-level"
+            >
               Add Level
             </button>
           </li>
-          <li class="sidebar-action-item">
-            <button class="sidebar-action-btn">Options</button>
+          <li class="sidebar-action-item" role="presentation">
+            <button
+              id="tab-options"
+              type="button"
+              class="sidebar-action-btn"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-options"
+              data-tab="options"
+            >
+              Options
+            </button>
           </li>
         </ul>
+
         <div class="sidebar-action">
-          <!-- ADD LEVEL START -->
-          <div>
-            <input
-              type="text"
-              class="sidebar-addlvl-input"
-              placeholder="Search level name..."
-              aria-label="Search level name"
-            />
-            <button type="button" class="sidebar-addlvl-btn">Search</button>
-          </div>
-          <div class="sidebar-addlvl-result">
-            <!-- Add level result goes here -->
-          </div>
-          <!-- ADD LEVEL END -->
-          <!-- Options START -->
-          <div>
+          <section
+            id="panel-add-level"
+            class="sidebar-panel"
+            role="tabpanel"
+            aria-labelledby="tab-add-level"
+            data-panel="add-level"
+          >
+            <div class="sidebar-addlvl-form">
+              <input
+                type="text"
+                class="sidebar-addlvl-input"
+                placeholder="Search level name..."
+                aria-label="Search level name"
+              />
+              <button type="button" class="sidebar-addlvl-btn">Search</button>
+            </div>
+            <div class="sidebar-addlvl-result" aria-live="polite">
+              <!-- Add level result goes here -->
+            </div>
+          </section>
+
+          <section
+            id="panel-options"
+            class="sidebar-panel"
+            role="tabpanel"
+            aria-labelledby="tab-options"
+            data-panel="options"
+            hidden
+          >
             <div class="sidebar-option">
               <p>Grid Options</p>
               <div>
@@ -57,9 +95,11 @@
                 <input
                   type="range"
                   class="sidebar-options-height-range"
-                  min="0"
+                  min="1"
                   max="12"
                   value="5"
+                  step="1"
+                  aria-label="Grid height"
                 />
                 <p class="sidebar-options-height-value">5</p>
               </div>
@@ -68,29 +108,45 @@
                 <input
                   type="range"
                   class="sidebar-options-width-range"
-                  min="0"
+                  min="1"
                   max="12"
                   value="5"
+                  step="1"
+                  aria-label="Grid width"
                 />
                 <p class="sidebar-options-width-value">5</p>
+              </div>
             </div>
-            </div>
+
             <div class="sidebar-option">
               <p>Swap Creator and Level Name</p>
-              <input type="checkbox" class="sidebar-options-swap-name-checkbox" />
+              <input
+                type="checkbox"
+                class="sidebar-options-swap-name-checkbox"
+                aria-label="Swap creator and level name"
+              />
             </div>
+
             <div class="sidebar-option">
               <p>Rounded Corners</p>
-              <input type="checkbox" class="sidebar-options-rounded-corners-checkbox" />
+              <input
+                type="checkbox"
+                class="sidebar-options-rounded-corners-checkbox"
+                aria-label="Rounded corners"
+              />
             </div>
-          <!-- Options END -->
+          </section>
         </div>
       </div>
     </section>
+
     <section class="main-container">
-      <div class="main-grid">
+      <div class="main-grid" aria-label="Topster grid">
         <!-- Grid goes here --->
       </div>
     </section>
+
+    <script src="script.js"></script>
+    <script src="fetch-level.js"></script>
   </body>
 </html>
