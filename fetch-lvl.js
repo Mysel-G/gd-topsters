@@ -5,17 +5,36 @@
   const allowUnratedCheckbox = document.querySelector(
     ".sidebar-options-allow-unrated-checkbox",
   );
+  const pagination = document.querySelector(".sidebar-addlvl-pagination");
+  const previousPageButton = document.querySelector(
+    ".sidebar-addlvl-page-prev",
+  );
+  const nextPageButton = document.querySelector(".sidebar-addlvl-page-next");
+  const pageNumber = document.querySelector(".sidebar-addlvl-page-number");
 
   let isLoading = false;
+  let currentPage = 0;
+  let hasNextPage = false;
+  let activeSearch = null;
 
-  searchButton.addEventListener("click", fetchLevels);
+  searchButton.addEventListener("click", startSearch);
   searchInput.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
-    fetchLevels();
+    startSearch();
   });
 
-  async function fetchLevels() {
+  previousPageButton.addEventListener("click", () => {
+    if (!activeSearch || isLoading || currentPage <= 0) return;
+    loadPage(currentPage - 1);
+  });
+
+  nextPageButton.addEventListener("click", () => {
+    if (!activeSearch || isLoading || !hasNextPage) return;
+    loadPage(currentPage + 1);
+  });
+
+  function startSearch() {
     if (isLoading) return;
 
     if (window.location.protocol === "file:") {
@@ -33,15 +52,31 @@
       return;
     }
 
-    const rated = allowUnratedCheckbox.checked ? "0" : "1";
+    activeSearch = {
+      query,
+      rated: allowUnratedCheckbox.checked ? "0" : "1",
+    };
+    currentPage = 0;
+    hasNextPage = false;
+    loadPage(0, true);
+  }
+
+  async function loadPage(page, isNewSearch = false) {
+    if (isLoading || !activeSearch) return;
+
+    const targetPage = Math.max(0, Math.min(50, page));
     const params = new URLSearchParams({
-      q: query,
-      page: "0",
-      rated,
+      q: activeSearch.query,
+      page: String(targetPage),
+      rated: activeSearch.rated,
     });
 
     setLoading(true);
-    setStatus("Searching…");
+    if (isNewSearch) {
+      setStatus("Searching…");
+    } else {
+      updatePagination();
+    }
 
     try {
       const response = await fetch(`/api/gd/search?${params.toString()}`);
@@ -56,22 +91,64 @@
         throw new Error(message);
       }
 
-      renderResults(parseLevels(await response.text()));
+      const levels = parseLevels(await response.text());
+
+      if (targetPage > 0 && levels.length === 0) {
+        currentPage = targetPage - 1;
+        hasNextPage = false;
+        updatePagination();
+        window.GDTopsterGrid?.toast("No more results.");
+        return;
+      }
+
+      currentPage = targetPage;
+
+      if (levels.length === 0) {
+        hasNextPage = false;
+        setStatus("No levels found.");
+        return;
+      }
+
+      renderResults(levels);
+      hasNextPage = levels.length === 10 && currentPage < 50;
+      showPagination();
     } catch (error) {
       console.error(error);
-      setStatus(error.message || "Search failed. Is the local proxy running?");
+      if (isNewSearch) {
+        setStatus(
+          error.message || "Search failed. Is the local proxy running?",
+        );
+      } else {
+        window.GDTopsterGrid?.toast(
+          error.message || "Search failed. Is the local proxy running?",
+        );
+      }
     } finally {
       setLoading(false);
     }
+  }
+
+  function showPagination() {
+    pagination.hidden = false;
+    updatePagination();
+  }
+
+  function updatePagination() {
+    if (pagination.hidden) return;
+    previousPageButton.disabled = isLoading || currentPage <= 0;
+    nextPageButton.disabled = isLoading || !hasNextPage;
+    pageNumber.textContent = String(currentPage + 1);
   }
 
   function setLoading(loading) {
     isLoading = loading;
     searchButton.disabled = loading;
     resultContainer.setAttribute("aria-busy", String(loading));
+    updatePagination();
   }
 
   function setStatus(message) {
+    pagination.hidden = true;
     resultContainer.replaceChildren();
     const status = document.createElement("p");
     status.className = "sidebar-addlvl-status";
