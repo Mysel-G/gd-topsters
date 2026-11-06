@@ -265,7 +265,6 @@
     return input
       .replace(/['’`]/g, "")
       .replace(/[^A-Za-z0-9 ,\-]/g, " ")
-      .replace(/\s+/g, " ")
       .trim()
       .slice(0, 100);
   }
