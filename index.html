@@ -3,7 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <meta
+      name="description"
+      content="Make topster charts with Geometry Dash levels."
+    />
+    <title>GD Topster</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body class="main">
@@ -25,8 +36,13 @@
         <div class="sidebar-action">
           <!-- ADD LEVEL START -->
           <div>
-            <input type="text" class="sidebar-addlvl-input" />
-            <button class="sidebar-addlvl-btn">Search</button>
+            <input
+              type="text"
+              class="sidebar-addlvl-input"
+              placeholder="Search level name..."
+              aria-label="Search level name"
+            />
+            <button type="button" class="sidebar-addlvl-btn">Search</button>
           </div>
           <div class="sidebar-addlvl-result">
             <!-- Add level result goes here -->
@@ -43,8 +59,9 @@
                   class="sidebar-options-height-range"
                   min="0"
                   max="12"
+                  value="5"
                 />
-                <p class="sidebar-options-height-value">0</p>
+                <p class="sidebar-options-height-value">5</p>
               </div>
               <div>
                 <p>Width</p>
@@ -53,8 +70,9 @@
                   class="sidebar-options-width-range"
                   min="0"
                   max="12"
+                  value="5"
                 />
-                <p class="sidebar-options-width-value">0</p>
+                <p class="sidebar-options-width-value">5</p>
             </div>
             </div>
             <div class="sidebar-option">

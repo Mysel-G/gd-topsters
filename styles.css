@@ -1,25 +1,551 @@
+/* ==========================================================================
+   Topsters 3-inspired styles
+   Tokens and geometry extracted from topsters.org (2026-11-06)
+   ========================================================================== */
+
 :root {
   --ui-bg: #000;
   --blue-bg: #0f9b8e;
   --text-color: #fff;
-  --main-bg: #444;
+  --main-bg: #2a2a2a;
   --accent: coral;
   --input-bg: #ccc;
-  --lightningcss-light: ;
-  --lightningcss-dark: initial;
+  --panel-bg: #141414cc;
+  --button-bg: #393939;
+  --muted: #b5b5b5;
+  --border: #3c3c3ce6;
+  --placeholder: #5a5a5a99;
+  --sidebar-width: 400px;
+  --tile-size: 260px;
+  --grid-gap: 20px;
+  --tile-radius: 0px;
   color-scheme: dark;
 }
 
-#app {
-  color: var(--text-color);
-  scrollbar-color: var(--accent) black;
-  accent-color: var(--accent);
-  font-family: Nunito, sans-serif;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: var(--main-bg);
+  color: var(--text-color);
+  font-family:
+    "Nunito",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  scrollbar-color: var(--accent) #000;
+  scrollbar-width: thin;
+  accent-color: var(--accent);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   App shell
+   -------------------------------------------------------------------------- */
 
 .main {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  background-color: var(--main-bg);
-  min-height: 100vh;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar
+   -------------------------------------------------------------------------- */
+
+.sidebar-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 10px;
+  background: transparent;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  min-height: 0;
+}
+
+.sidebar-header {
+  padding: 16px 10px;
+  text-align: center;
+  background: var(--panel-bg);
+  border-radius: 6px;
+}
+
+.sidebar-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+/* Tabs -------------------------------------------------------------------- */
+
+.sidebar-action-list {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sidebar-action-item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.sidebar-action-btn {
+  width: 100%;
+  padding: 8px 10px;
+  color: #000;
+  background: var(--muted);
+  border: none;
+  border-radius: 6px 6px 0 0;
+  font-size: 1rem;
+  line-height: 1.2;
+  transition:
+    background-color 0.15s ease-out,
+    color 0.15s ease-out;
+}
+
+.sidebar-action-btn:hover {
+  background: #c9c9c9;
+}
+
+.sidebar-action-btn-active,
+.sidebar-action-btn-active:hover {
+  color: var(--text-color);
+  background: var(--panel-bg);
+}
+
+/* Tab panel --------------------------------------------------------------- */
+
+.sidebar-action {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--panel-bg);
+  border-radius: 0 6px 6px;
+  scrollbar-color: var(--accent) #000;
+  scrollbar-width: thin;
+}
+
+/* Search row -------------------------------------------------------------- */
+
+.sidebar-action > div:first-child {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.sidebar-addlvl-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 36px;
+  padding: 8px 10px;
+  color: #000;
+  background: var(--input-bg);
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.sidebar-addlvl-input::placeholder {
+  color: #00000080;
+}
+
+.sidebar-addlvl-btn {
+  flex: 0 0 auto;
+  height: 36px;
+  padding: 0 14px;
+  color: #000;
+  background: var(--input-bg);
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition:
+    background-color 0.15s ease-out,
+    color 0.15s ease-out;
+}
+
+.sidebar-addlvl-btn:hover {
+  color: #000;
+  background: var(--accent);
+}
+
+/* Search results ---------------------------------------------------------- */
+
+.sidebar-addlvl-result {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 90px);
+  gap: 4px;
+  justify-content: space-evenly;
+  align-content: start;
+  max-height: 45vh;
+  margin: 12px 0;
+  overflow-y: auto;
+  padding: 2px;
+  scrollbar-color: var(--accent) #000;
+  scrollbar-width: thin;
+}
+
+.sidebar-addlvl-result:empty::after {
+  content: "Search results will appear here";
+  grid-column: 1 / -1;
+  padding: 18px 6px;
+  color: #ffffff80;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.sidebar-addlvl-result > * {
+  width: 90px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--placeholder);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sidebar-addlvl-result img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.sidebar-addlvl-result > *:hover {
+  filter: brightness(1.1);
+}
+
+/* Options ----------------------------------------------------------------- */
+
+.sidebar-option {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-option:first-of-type {
+  padding-top: 2px;
+  border-top: 0;
+}
+
+.sidebar-option > p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.sidebar-option:first-of-type > p:first-child {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sidebar-option > div {
+  flex: 1 0 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.sidebar-option > div p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.sidebar-option > div p:first-child {
+  flex: 0 0 56px;
+}
+
+.sidebar-options-height-value,
+.sidebar-options-width-value {
+  flex: 0 0 24px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Range inputs ------------------------------------------------------------ */
+
+input[type="range"] {
+  flex: 1 1 auto;
+  height: 4px;
+  background: var(--input-bg);
+  border: none;
+  border-radius: 5px;
+  appearance: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 1px 1px 1px #000;
+  appearance: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 1px 1px 1px #000;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: var(--input-bg);
+  border-radius: 5px;
+}
+
+input[type="range"]::-moz-range-progress {
+  height: 4px;
+  background: var(--accent);
+  border-radius: 5px;
+}
+
+/* Checkbox switches ------------------------------------------------------- */
+
+.sidebar-option input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 24px;
+  margin: 0;
+  background-color: var(--input-bg);
+  background-image: radial-gradient(
+    circle at center,
+    #fff 0 9px,
+    transparent 9.5px
+  );
+  background-repeat: no-repeat;
+  background-position: left 2px center;
+  background-size: 20px 20px;
+  border: none;
+  border-radius: 16px;
+  appearance: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease-out,
+    background-position 0.2s ease-out;
+}
+
+.sidebar-option input[type="checkbox"]:checked {
+  background-color: var(--accent);
+  background-position: right 2px center;
+}
+
+/* --------------------------------------------------------------------------
+   Chart area
+   -------------------------------------------------------------------------- */
+
+.main-container {
+  height: 100%;
+  min-width: 0;
+  padding: 50px 20px;
+  overflow: auto;
+  scrollbar-color: var(--accent) #000;
+  scrollbar-width: thin;
+}
+
+.main-grid {
+  --cols: 5;
+  --rows: 5;
+  /* 
+     fit 5x5 chart
+     560px = sidebar 400 + container padding 40 + gaps 80 + grid padding 40
+     220px = container padding 100 + gaps 80 + grid padding 40 
+  */
+  --tile: clamp(
+    100px,
+    min(calc((100vw - 560px) / 5), calc((100dvh - 220px) / 5)),
+    260px
+  );
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--tile));
+  grid-auto-rows: var(--tile);
+  gap: var(--grid-gap);
+  width: max-content;
+  min-width: calc(
+    var(--cols) * (var(--tile) + var(--grid-gap)) + var(--grid-gap)
+  );
+  min-height: calc(
+    var(--rows) * (var(--tile) + var(--grid-gap)) + var(--grid-gap)
+  );
+  margin: 0 auto;
+  padding: var(--grid-gap);
+  background: #000;
+  box-shadow: 0 0 0 1px #141414;
+  transform: scale(var(--chart-scale, 1));
+  transform-origin: top center;
+}
+
+/* The whitespace/comment in the empty grid prevents :empty, so test for the
+   absence of element children instead; the hint disappears as soon as JS adds
+   the first tile. */
+.main-grid:not(:has(> *))::after {
+  content: "Search for levels to start your topster";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #666;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.main-grid > * {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--placeholder);
+  border-radius: var(--tile-radius);
+  box-shadow: 2px 2px 4px rgb(0 0 0 / 60%);
+}
+
+.main-grid img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Rounded corners checkbox drives the chart tiles (no JS) */
+body:has(.sidebar-options-rounded-corners-checkbox:checked) .main-grid {
+  --tile-radius: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1000px) {
+  body {
+    overflow: hidden;
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) 50dvh;
+  }
+
+  .sidebar-container {
+    order: 2;
+    padding: 0;
+    background: #000;
+  }
+
+  .sidebar {
+    gap: 0;
+  }
+
+  .sidebar-header {
+    display: none;
+  }
+
+  .sidebar-action-list {
+    order: 2;
+    padding: 0 10px 10px;
+    background: #000;
+  }
+
+  .sidebar-action {
+    order: 1;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .main-container {
+    order: 1;
+    padding: 20px 10px;
+  }
+
+  .main-grid {
+    /* The sidebar is below the chart at <= 1000px */
+    --tile: clamp(120px, calc((100vw - 140px) / 5), 220px);
+  }
+}
+
+@media (max-width: 600px) {
+  .main-grid {
+    --tile: 140px;
+    --grid-gap: 10px;
+  }
+
+  .sidebar-addlvl-result {
+    max-height: 35vh;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
