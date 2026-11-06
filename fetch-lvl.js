@@ -108,6 +108,25 @@
       image.draggable = true;
 
       let dragged = false;
+      let pointerDragAt = 0;
+
+      button.addEventListener("pointerdown", (event) => {
+        if (event.pointerType === "mouse") return;
+
+        window.GDTopsterGrid?.startPointerDrag(event, {
+          source: button,
+          delay: 180,
+          onDragStart: () => {
+            pointerDragAt = Date.now();
+          },
+          onDrop: (cell) => {
+            const index = Number(cell.dataset.index);
+            if (Number.isInteger(index)) {
+              window.GDTopsterGrid.addLevel(index, level);
+            }
+          },
+        });
+      });
 
       button.addEventListener("dragstart", (event) => {
         dragged = true;
@@ -131,7 +150,10 @@
       });
 
       button.addEventListener("click", () => {
-        if (dragged) return;
+        if (dragged || Date.now() - pointerDragAt < 600) {
+          dragged = false;
+          return;
+        }
         window.GDTopsterGrid?.addLevelToFirstEmpty(level);
       });
 

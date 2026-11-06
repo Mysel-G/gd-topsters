@@ -226,9 +226,13 @@
 
     const availableWidth = Math.max(0, gridArea.clientWidth - padX);
     const availableHeight = Math.max(0, gridArea.clientHeight - padY);
+    const isMobile = window.matchMedia("(max-width: 1000px)").matches;
+    const widthScale = availableWidth / baseWidth;
     const scale = Math.max(
       0.05,
-      Math.min(availableWidth / baseWidth, availableHeight / baseHeight),
+      isMobile
+        ? widthScale
+        : Math.min(widthScale, availableHeight / baseHeight),
     );
 
     grid.style.setProperty("--chart-scale", String(scale));
@@ -367,6 +371,138 @@
     return item.author ? `${name} by ${item.author}` : name;
   }
 
+  function startPointerDrag(event, options) {
+    if (event.pointerType === "mouse") return;
+
+    const source = options.source;
+    const delay = options.delay ?? 180;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const pointerId = event.pointerId;
+    let active = false;
+    let finished = false;
+    let ghost = null;
+    let targetCell = null;
+    let timer = null;
+
+    function clearTarget() {
+      targetCell?.classList.remove("grid-cell--drop-target");
+      targetCell = null;
+    }
+
+    function findCell(x, y) {
+      return document.elementFromPoint(x, y)?.closest(".grid-cell") || null;
+    }
+
+    function updateGhost(x, y) {
+      if (!ghost) return;
+      const size = ghost.offsetWidth;
+      ghost.style.left = `${x - size / 2}px`;
+      ghost.style.top = `${y - size / 2}px`;
+    }
+
+    function createGhost() {
+      const rect = source.getBoundingClientRect();
+      const size = Math.min(128, Math.max(64, rect.width || 64));
+      const image = source.querySelector("img");
+      const element = document.createElement("div");
+      element.className = "pointer-drag-ghost";
+      element.style.width = `${size}px`;
+      element.style.height = `${size}px`;
+
+      if (image?.currentSrc || image?.src) {
+        element.style.backgroundImage = `url("${image.currentSrc || image.src}")`;
+      } else {
+        element.textContent = source.textContent.trim().slice(0, 60);
+      }
+
+      document.body.appendChild(element);
+      return element;
+    }
+
+    function cleanup() {
+      if (finished) return;
+      finished = true;
+
+      if (timer) clearTimeout(timer);
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", cleanup);
+      ghost?.remove();
+      ghost = null;
+      clearTarget();
+      source.classList.remove("is-dragging");
+      source.closest(".grid-cell")?.classList.remove("grid-cell--dragging");
+      document.body.classList.remove("is-pointer-dragging");
+      options.onDragEnd?.();
+      try {
+        source.releasePointerCapture?.(pointerId);
+      } catch {
+        // Ignore browsers that reject releasing a capture they do not own.
+      }
+    }
+
+    function begin() {
+      if (finished) return;
+      active = true;
+      timer = null;
+      ghost = createGhost();
+      source.classList.add("is-dragging");
+      source.closest(".grid-cell")?.classList.add("grid-cell--dragging");
+      document.body.classList.add("is-pointer-dragging");
+      options.onDragStart?.();
+      updateGhost(startX, startY);
+      try {
+        source.setPointerCapture?.(pointerId);
+      } catch {
+        // Pointer capture is optional; document listeners still track the drag.
+      }
+    }
+
+    function onMove(moveEvent) {
+      if (!active) {
+        const distance = Math.hypot(
+          moveEvent.clientX - startX,
+          moveEvent.clientY - startY,
+        );
+        if (distance > 9) cleanup();
+        return;
+      }
+
+      moveEvent.preventDefault();
+      updateGhost(moveEvent.clientX, moveEvent.clientY);
+
+      const cell = findCell(moveEvent.clientX, moveEvent.clientY);
+      if (cell !== targetCell) {
+        clearTarget();
+        targetCell = cell;
+        targetCell?.classList.add("grid-cell--drop-target");
+      }
+    }
+
+    function onUp(upEvent) {
+      if (!active) {
+        cleanup();
+        return;
+      }
+
+      upEvent.preventDefault();
+      const cell = findCell(upEvent.clientX, upEvent.clientY);
+      cleanup();
+      if (cell) options.onDrop?.(cell);
+    }
+
+    document.addEventListener("pointermove", onMove, { passive: false });
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", cleanup);
+
+    if (delay > 0) {
+      timer = setTimeout(begin, delay);
+    } else {
+      begin();
+    }
+  }
+
   function createMedia(index, item) {
     const media = document.createElement(item ? "div" : "button");
     media.className = "grid-cell-media";
@@ -432,6 +568,17 @@
 
     media.addEventListener("dragend", () => {
       media.closest(".grid-cell")?.classList.remove("grid-cell--dragging");
+    });
+
+    media.addEventListener("pointerdown", (event) => {
+      startPointerDrag(event, {
+        source: media,
+        delay: 0,
+        onDrop: (cell) => {
+          const target = Number(cell.dataset.index);
+          if (Number.isInteger(target)) moveItem(index, target);
+        },
+      });
     });
 
     return media;
@@ -1028,6 +1175,7 @@
     addLevel,
     addLevelToFirstEmpty,
     getState,
+    startPointerDrag,
     toast,
   };
 })();
