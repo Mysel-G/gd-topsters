@@ -17,6 +17,14 @@
   const swapNamesCheckbox = document.querySelector(
     ".sidebar-options-swap-name-checkbox",
   );
+  const titleInput = document.querySelector(".sidebar-options-title-input");
+  const roundedCornersCheckbox = document.querySelector(
+    ".sidebar-options-rounded-corners-checkbox",
+  );
+  const saveDataButton = document.querySelector(".sidebar-save-data-btn");
+  const importDataButton = document.querySelector(".sidebar-import-data-btn");
+  const exportPngButton = document.querySelector(".sidebar-export-png-btn");
+  const importFileInput = document.querySelector(".sidebar-import-file");
 
   const STORAGE_KEY = "gdtopster.grid.v1";
   const MIN_COLS = 1;
@@ -27,9 +35,11 @@
   const CUSTOM_IMAGE_SIZE = 512;
 
   const state = {
+    title: "",
     cols: 5,
     rows: 5,
     swapNames: false,
+    rounded: false,
     items: [],
   };
 
@@ -128,7 +138,9 @@
 
       state.cols = clamp(Number(parsed.cols) || 5, MIN_COLS, MAX_COLS);
       state.rows = clamp(Number(parsed.rows) || 5, MIN_ROWS, MAX_ROWS);
+      state.title = typeof parsed.title === "string" ? parsed.title : "";
       state.swapNames = Boolean(parsed.swapNames);
+      state.rounded = Boolean(parsed.rounded);
       state.items = Array.isArray(parsed.items)
         ? parsed.items.map(normalizeStoredItem)
         : [];
@@ -145,6 +157,10 @@
     heightValue.textContent = String(state.rows);
     widthValue.textContent = String(state.cols);
     if (swapNamesCheckbox) swapNamesCheckbox.checked = state.swapNames;
+    if (roundedCornersCheckbox) {
+      roundedCornersCheckbox.checked = state.rounded;
+    }
+    if (titleInput) titleInput.value = state.title;
   }
 
   function saveState() {
@@ -155,9 +171,11 @@
           STORAGE_KEY,
           JSON.stringify({
             version: 1,
+            title: state.title,
             cols: state.cols,
             rows: state.rows,
             swapNames: state.swapNames,
+            rounded: state.rounded,
             items: state.items,
           }),
         );
@@ -231,6 +249,11 @@
     grid.style.setProperty("--rows", String(rows));
 
     const fragment = document.createDocumentFragment();
+
+    if (state.title.trim()) {
+      fragment.appendChild(createTitleRow(state.title));
+    }
+
     for (let row = 0; row < rows; row += 1) {
       for (let column = 0; column < cols; column += 1) {
         const index = row * cols + column;
@@ -252,8 +275,14 @@
     saveState();
   }
 
-  function createCell(index, item) {
-    const cell = document.createElement("div");
+  function createTitleRow(title) {
+    const row = document.createElement("div");
+    row.className = "chart-title-row";
+    row.textContent = title;
+    return row;
+  }
+
+  function createCell(index, item) {    const cell = document.createElement("div");
     cell.className = "grid-cell";
     cell.dataset.index = String(index);
 
@@ -691,6 +720,176 @@
     }, 2600);
   }
 
+  function slugify(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60);
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.rel = "noopener";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function getState() {
+    return JSON.parse(
+      JSON.stringify({
+        version: 1,
+        title: state.title,
+        cols: state.cols,
+        rows: state.rows,
+        swapNames: state.swapNames,
+        rounded: state.rounded,
+        items: state.items.slice(0, state.cols * state.rows),
+      }),
+    );
+  }
+
+  function exportTopsterData() {
+    const data = {
+      format: "gdtopster",
+      ...getState(),
+      savedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    downloadBlob(blob, `${slugify(state.title) || "gd-topster"}.json`);
+    toast("Topster data saved.");
+  }
+
+  function importTopsterData(data) {
+    if (!data || typeof data !== "object" || !Array.isArray(data.items)) {
+      throw new Error("Invalid topster file.");
+    }
+
+    const cols = clamp(Number(data.cols) || 5, MIN_COLS, MAX_COLS);
+    const rows = clamp(Number(data.rows) || 5, MIN_ROWS, MAX_ROWS);
+    const items = data.items.map(normalizeStoredItem);
+
+    state.title = typeof data.title === "string" ? data.title : "";
+    state.cols = cols;
+    state.rows = rows;
+    state.swapNames = Boolean(data.swapNames);
+    state.rounded = Boolean(data.rounded);
+    state.items = items;
+    ensureItemCapacity();
+    syncControlsFromState();
+    renderGrid();
+  }
+
+  function waitForImage(image) {
+    if (image.complete) return Promise.resolve();
+    return new Promise((resolve) => {
+      image.addEventListener("load", resolve, { once: true });
+      image.addEventListener("error", resolve, { once: true });
+    });
+  }
+
+  function replaceImagesWithCanvases(root) {
+    for (const image of root.querySelectorAll(".grid-cell-media img")) {
+      if (!image.complete || !image.naturalWidth) continue;
+
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 520;
+        canvas.height = 520;
+        const context = canvas.getContext("2d");
+        const side = Math.min(image.naturalWidth, image.naturalHeight);
+
+        context.imageSmoothingQuality = "high";
+        context.drawImage(
+          image,
+          (image.naturalWidth - side) / 2,
+          (image.naturalHeight - side) / 2,
+          side,
+          side,
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+        );
+
+        canvas.className = image.className;
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        canvas.style.display = "block";
+        image.replaceWith(canvas);
+      } catch (error) {
+        console.warn("Could not prepare an image for PNG export.", error);
+      }
+    }
+  }
+
+  async function exportPng() {
+    if (typeof window.html2canvas !== "function") {
+      toast("PNG export is unavailable. Check your connection and try again.");
+      return;
+    }
+
+    const label = exportPngButton.textContent.trim();
+    exportPngButton.disabled = true;
+    exportPngButton.textContent = "Exporting…";
+    let clone;
+
+    try {
+      if (document.fonts?.ready) await document.fonts.ready;
+
+      clone = grid.cloneNode(true);
+      clone.style.position = "fixed";
+      clone.style.left = "-10000px";
+      clone.style.top = "0";
+      clone.style.transform = "none";
+      clone.style.visibility = "visible";
+      clone.classList.add("is-scaled");
+      clone.setAttribute("aria-hidden", "true");
+      for (const image of clone.querySelectorAll("img")) {
+        image.loading = "eager";
+      }
+      document.body.appendChild(clone);
+
+      await Promise.all(
+        Array.from(clone.querySelectorAll(".grid-cell-media img")).map(
+          waitForImage,
+        ),
+      );
+      replaceImagesWithCanvases(clone);
+
+      const canvas = await window.html2canvas(clone, {
+        backgroundColor: "#000000",
+        useCORS: true,
+        scale: 2,
+        logging: false,
+        width: clone.offsetWidth,
+        height: clone.offsetHeight,
+      });
+
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/png"),
+      );
+      if (!blob) throw new Error("Could not create PNG.");
+
+      downloadBlob(blob, `${slugify(state.title) || "gd-topster"}.png`);
+      toast("PNG exported.");
+    } catch (error) {
+      console.error(error);
+      toast("Could not export PNG.");
+    } finally {
+      clone?.remove();
+      exportPngButton.disabled = false;
+      exportPngButton.textContent = label;
+    }
+  }
+
   for (const tab of tabs) {
     tab.addEventListener("click", () => activateTab(tab.dataset.tab));
 
@@ -716,7 +915,49 @@
     });
   }
 
+  if (roundedCornersCheckbox) {
+    roundedCornersCheckbox.addEventListener("change", () => {
+      state.rounded = roundedCornersCheckbox.checked;
+      saveState();
+    });
+  }
+
   unratedLevelsCheckbox.addEventListener("change", syncUnratedWarning);
+
+  if (titleInput) {
+    titleInput.addEventListener("input", () => {
+      state.title = titleInput.value;
+      renderGrid();
+    });
+  }
+
+  if (saveDataButton) {
+    saveDataButton.addEventListener("click", exportTopsterData);
+  }
+
+  if (importDataButton && importFileInput) {
+    importDataButton.addEventListener("click", () => importFileInput.click());
+  }
+
+  if (importFileInput) {
+    importFileInput.addEventListener("change", async () => {
+      const file = importFileInput.files?.[0];
+      importFileInput.value = "";
+      if (!file) return;
+
+      try {
+        importTopsterData(JSON.parse(await file.text()));
+        toast("Topster imported.");
+      } catch (error) {
+        console.error(error);
+        toast("Could not import that topster.");
+      }
+    });
+  }
+
+  if (exportPngButton) {
+    exportPngButton.addEventListener("click", exportPng);
+  }
 
   const observer =
     typeof ResizeObserver === "function"
@@ -734,16 +975,7 @@
   window.GDTopsterGrid = {
     addLevel,
     addLevelToFirstEmpty,
-    getState: () =>
-      JSON.parse(
-        JSON.stringify({
-          version: 1,
-          cols: state.cols,
-          rows: state.rows,
-          swapNames: state.swapNames,
-          items: state.items.slice(0, state.cols * state.rows),
-        }),
-      ),
+    getState,
     toast,
   };
 })();
