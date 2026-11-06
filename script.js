@@ -929,7 +929,7 @@
 
     downloadBlob(
       blob,
-      `${slugify(state.title) + "-" + formattedDate || "gd-topster" + "-" + formattedDate}.json`,
+      `${slugify(state.title) || "gd-topster"}-${formattedDate}.json`,
     );
     toast("Topster data saved.");
   }
@@ -1081,7 +1081,7 @@
 
       downloadBlob(
         blob,
-        `${slugify(state.title) + "-" + formattedDate || "gd-topster" + "-" + formattedDate}.png`,
+        `${slugify(state.title) || "gd-topster"}-${formattedDate}.png`,
       );
       toast("PNG exported.");
     } catch (error) {
