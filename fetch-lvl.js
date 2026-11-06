@@ -104,10 +104,11 @@
       image.alt = "";
       image.loading = "lazy";
       image.decoding = "async";
-      image.addEventListener("error", () => {
-        image.remove();
-        button.classList.add("is-missing");
-        button.textContent = level.name;
+
+      image.addEventListener("error", function onError() {
+        image.removeEventListener("error", onError);
+        image.src = "img-not-found.png";
+        button.classList.add("sidebar-addlvl-result-item-broken");
       });
 
       button.appendChild(image);
