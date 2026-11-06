@@ -256,6 +256,50 @@ h3 {
   cursor: pointer;
 }
 
+.sidebar-addlvl-result > button {
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  border: 0;
+  appearance: none;
+}
+
+.sidebar-addlvl-result > button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sidebar-addlvl-result-item.is-missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  color: #fff;
+  font-size: 0.65rem;
+  line-height: 1.2;
+  text-align: center;
+  word-break: break-word;
+}
+
+.sidebar-addlvl-result > .sidebar-addlvl-status {
+  width: auto;
+  aspect-ratio: auto;
+  grid-column: 1 / -1;
+  padding: 18px 6px;
+  overflow: visible;
+  color: #ffffff80;
+  font-size: 0.8rem;
+  text-align: center;
+  background: transparent;
+  border-radius: 0;
+  cursor: default;
+}
+
+.sidebar-addlvl-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 .sidebar-addlvl-result img {
   display: block;
   width: 100%;

@@ -1,0 +1,10 @@
+{
+  "name": "gdtopster",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Topster charts for Geometry Dash levels",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  }
+}
