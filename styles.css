@@ -476,33 +476,37 @@ input[type="range"]::-moz-range-progress {
   scrollbar-width: thin;
 }
 
+.chart-scale {
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
 .main-grid {
   --cols: 5;
   --rows: 5;
   --label-width: 0px;
   --action-size: clamp(20px, calc(var(--tile) * 0.28), 30px);
-  /* 
-     fit 5x5 chart
-     560px = sidebar 400 + container padding 40 + gaps 80 + grid padding 40
-     220px = container padding 100 + gaps 80 + grid padding 40 
-  */
-  --tile: clamp(
-    100px,
-    min(calc((100vw - 820px) / 5), calc((100dvh - 220px) / 5)),
-    260px
-  );
-  position: relative;
+  --tile: 260px;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: grid;
   grid-template-columns: repeat(var(--cols), var(--tile)) var(--label-width);
   grid-auto-rows: auto;
   gap: var(--grid-gap);
   width: max-content;
-  margin: 0 auto;
+  margin: 0;
   padding: var(--grid-gap);
   background: #000;
   box-shadow: 0 0 0 1px #141414;
   transform: scale(var(--chart-scale, 1));
-  transform-origin: top center;
+  transform-origin: top left;
+  visibility: hidden;
+}
+
+.main-grid.is-scaled {
+  visibility: visible;
 }
 
 /* The whitespace/comment in the empty grid prevents :empty, so test for the
@@ -742,18 +746,9 @@ body:has(.sidebar-options-rounded-corners-checkbox:checked) .main-grid {
     order: 1;
     padding: 20px 10px;
   }
-
-  .main-grid {
-    /* The sidebar is below the chart at <= 1000px */
-    --tile: clamp(120px, calc((100vw - 140px) / 5), 220px);
-  }
 }
 
 @media (max-width: 600px) {
-  .main-grid {
-    --tile: 140px;
-  }
-
   .sidebar-addlvl-result {
     max-height: 35vh;
   }

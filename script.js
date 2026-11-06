@@ -23,8 +23,7 @@
   const MAX_COLS = 12;
   const MIN_ROWS = 1;
   const MAX_ROWS = 12;
-  const MIN_TILE = 60;
-  const MAX_TILE = 260;
+  const TILE_SIZE = 260;
   const CUSTOM_IMAGE_SIZE = 512;
 
   const state = {
@@ -169,10 +168,8 @@
     }, 150);
   }
 
-  function updateTileSize() {
-    const { cols, rows } = getGridSize();
-    const gridStyle = getComputedStyle(grid);
-    const gap = Number.parseFloat(gridStyle.getPropertyValue("--grid-gap")) || 20;
+  function updateGridGeometry() {
+    const { cols } = getGridSize();
     const labelCell = grid.querySelector(".grid-row-labels");
     const labelPadding = labelCell
       ? Number.parseFloat(getComputedStyle(labelCell).paddingLeft) +
@@ -187,6 +184,17 @@
       : 0;
 
     grid.style.setProperty("--label-width", `${labelWidth}px`);
+    grid.style.gridTemplateColumns = `${Array.from(
+      { length: cols },
+      () => `${TILE_SIZE}px`,
+    ).join(" ")} ${labelWidth}px`;
+  }
+
+  function updateChartScale() {
+    const stage = grid.parentElement;
+    const baseWidth = grid.offsetWidth;
+    const baseHeight = grid.offsetHeight;
+    if (!stage || !baseWidth || !baseHeight) return;
 
     const areaStyle = getComputedStyle(gridArea);
     const padX =
@@ -196,21 +204,19 @@
       Number.parseFloat(areaStyle.paddingTop) +
       Number.parseFloat(areaStyle.paddingBottom);
 
-    const availableWidth =
-      gridArea.clientWidth - padX - labelWidth - (cols + 2) * gap;
-    const availableHeight = gridArea.clientHeight - padY - (rows + 1) * gap;
-
-    const tile = clamp(
-      Math.min(availableWidth / cols, availableHeight / rows),
-      MIN_TILE,
-      MAX_TILE,
+    const availableWidth = Math.max(0, gridArea.clientWidth - padX);
+    const availableHeight = Math.max(0, gridArea.clientHeight - padY);
+    const scale = Math.max(
+      0.05,
+      Math.min(availableWidth / baseWidth, availableHeight / baseHeight),
     );
 
-    grid.style.setProperty("--tile", `${Math.floor(tile * 100) / 100}px`);
-    grid.style.gridTemplateColumns = `${Array.from(
-      { length: cols },
-      () => `${tile}px`,
-    ).join(" ")} ${labelWidth}px`;
+    grid.style.setProperty("--chart-scale", String(scale));
+    grid.style.transform = `scale(${scale})`;
+    grid.style.visibility = "visible";
+    stage.style.width = `${Math.floor(baseWidth * scale)}px`;
+    stage.style.height = `${Math.floor(baseHeight * scale)}px`;
+    grid.classList.add("is-scaled");
   }
 
   function renderGrid() {
@@ -241,7 +247,8 @@
     }
 
     grid.replaceChildren(fragment);
-    updateTileSize();
+    updateGridGeometry();
+    updateChartScale();
     saveState();
   }
 
@@ -713,10 +720,10 @@
 
   const observer =
     typeof ResizeObserver === "function"
-      ? new ResizeObserver(updateTileSize)
+      ? new ResizeObserver(updateChartScale)
       : null;
   if (observer) observer.observe(gridArea);
-  window.addEventListener("resize", updateTileSize);
+  window.addEventListener("resize", updateChartScale);
 
   loadState();
   syncControlsFromState();
