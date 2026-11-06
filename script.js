@@ -282,7 +282,8 @@
     return row;
   }
 
-  function createCell(index, item) {    const cell = document.createElement("div");
+  function createCell(index, item) {
+    const cell = document.createElement("div");
     cell.className = "grid-cell";
     cell.dataset.index = String(index);
 
@@ -401,10 +402,7 @@
       cell?.classList.add("grid-cell--dragging");
 
       event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData(
-        "application/x-gd-grid-index",
-        String(index),
-      );
+      event.dataTransfer.setData("application/x-gd-grid-index", String(index));
       event.dataTransfer.setData(
         "text/plain",
         JSON.stringify({ source: "grid", index }),
@@ -763,7 +761,16 @@
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
     });
-    downloadBlob(blob, `${slugify(state.title) || "gd-topster"}.json`);
+    const today = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const formattedDate =
+      `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}` +
+      `-${pad(today.getHours())}-${pad(today.getMinutes())}`;
+
+    downloadBlob(
+      blob,
+      `${slugify(state.title) + "-" + formattedDate || "gd-topster"}.json`,
+    );
     toast("Topster data saved.");
   }
 
