@@ -929,7 +929,7 @@
 
     downloadBlob(
       blob,
-      `${slugify(state.title) + "-" + formattedDate || "gd-topster"}.json`,
+      `${slugify(state.title) + "-" + formattedDate || "gd-topster" + "-" + formattedDate}.json`,
     );
     toast("Topster data saved.");
   }
@@ -1059,6 +1059,12 @@
       );
       replaceImagesWithCanvases(clone);
 
+      const today = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const formattedDate =
+        `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}` +
+        `-${pad(today.getHours())}-${pad(today.getMinutes())}`;
+
       const canvas = await window.html2canvas(clone, {
         backgroundColor: "#000000",
         useCORS: true,
@@ -1073,7 +1079,10 @@
       );
       if (!blob) throw new Error("Could not create PNG.");
 
-      downloadBlob(blob, `${slugify(state.title) || "gd-topster"}.png`);
+      downloadBlob(
+        blob,
+        `${slugify(state.title) + "-" + formattedDate || "gd-topster" + "-" + formattedDate}.png`,
+      );
       toast("PNG exported.");
     } catch (error) {
       console.error(error);
