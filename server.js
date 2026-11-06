@@ -88,6 +88,6 @@ const server = http.createServer((request, response) => {
   serveStatic(url, response);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`GD Topster running at http://localhost:${PORT}`);
 });
