@@ -498,8 +498,8 @@ input[type="range"]::-moz-range-progress {
   gap: var(--grid-gap);
   width: max-content;
   min-width: calc(
-    var(--cols) * (var(--tile) + var(--grid-gap)) + var(--label-width) +
-      2 * var(--grid-gap)
+    var(--cols) * (var(--tile) + var(--grid-gap)) + var(--label-width) + 2 *
+      var(--grid-gap)
   );
   min-height: calc(
     var(--rows) * (var(--tile) + var(--grid-gap)) + var(--grid-gap)
@@ -630,16 +630,15 @@ input[type="range"]::-moz-range-progress {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  list-style: none;
-}
-
-.grid-row-label {
-  overflow: hidden;
-  color: var(--text-color);
-  font-size: clamp(10px, calc(var(--tile) * 0.15), 20px);
-  line-height: 1.15;
-  text-overflow: ellipsis;
+  font-family: monospace;
+  text-shadow: rgba(0, 0, 0, 0.6) 2px 2px 4px;
+  color: rgb(255, 255, 255);
   white-space: nowrap;
+  text-align: left;
+  font-size: 20px;
+  list-style: none;
+  line-height: 1.2;
+  box-sizing: border-box;
 }
 
 .grid-cell-actions {
