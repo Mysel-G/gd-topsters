@@ -49,21 +49,21 @@
   let layoutFrame = 0;
 
   const UPLOAD_ICON = `
-    <svg viewBox="0 0 32 32" width="64" height="64" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round"
-      stroke-linejoin="round" aria-hidden="true">
-      <path d="M12 16V4"></path>
-      <path d="m7 9 5-5 5 5"></path>
-      <path d="M5 20h14"></path>
-    </svg>`;
+  <svg viewBox="0 0 32 32" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round" aria-hidden="true">
+    <path d="M16 20V8"></path>
+    <path d="m11 13 5-5 5 5"></path>
+    <path d="M9 24h14"></path>
+  </svg>`;
 
   const REMOVE_ICON = `
-    <svg viewBox="0 0 32 32" width="64" height="64" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round"
-      stroke-linejoin="round" aria-hidden="true">
-      <path d="M6 6l12 12"></path>
-      <path d="M18 6 6 18"></path>
-    </svg>`;
+  <svg viewBox="0 0 32 32" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round" aria-hidden="true">
+    <path d="M10 10l12 12"></path>
+    <path d="M22 10 10 22"></path>
+  </svg>`;
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
