@@ -59,6 +59,16 @@ module.exports = async function handler(request, response) {
 
     sendRaw(response, upstream.text);
   } catch (error) {
+    if (error.code === "rate_limited") {
+      response.setHeader("Retry-After", String(error.retryAfter || 1));
+      sendJson(response, 429, {
+        error: "rate_limited",
+        message: error.message,
+        retry_after: error.retryAfter || 1,
+      });
+      return;
+    }
+
     console.error("Upstream request failed:", error.message);
     sendJson(response, 502, {
       error: "upstream_unreachable",
