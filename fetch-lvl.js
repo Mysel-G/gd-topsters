@@ -92,6 +92,7 @@
       button.type = "button";
       button.className = "sidebar-addlvl-result-item";
       button.dataset.levelId = String(level.id);
+      button.draggable = true;
 
       const label = level.author
         ? `${level.name} by ${level.author}`
@@ -104,11 +105,40 @@
       image.alt = "";
       image.loading = "lazy";
       image.decoding = "async";
+      image.draggable = true;
 
-      image.addEventListener("error", function onError() {
-        image.removeEventListener("error", onError);
-        image.src = "img-not-found.png";
-        button.classList.add("sidebar-addlvl-result-item-broken");
+      let dragged = false;
+
+      button.addEventListener("dragstart", (event) => {
+        dragged = true;
+        button.classList.add("is-dragging");
+
+        const payload = JSON.stringify(level);
+        event.dataTransfer.effectAllowed = "copy";
+        event.dataTransfer.setData("application/x-gd-level", payload);
+        event.dataTransfer.setData("text/plain", payload);
+
+        if (image.complete && image.naturalWidth > 0) {
+          event.dataTransfer.setDragImage(image, 45, 45);
+        }
+      });
+
+      button.addEventListener("dragend", () => {
+        button.classList.remove("is-dragging");
+        setTimeout(() => {
+          dragged = false;
+        }, 100);
+      });
+
+      button.addEventListener("click", () => {
+        if (dragged) return;
+        window.GDTopsterGrid?.addLevelToFirstEmpty(level);
+      });
+
+      image.addEventListener("error", () => {
+        image.remove();
+        button.classList.add("is-missing");
+        button.textContent = level.name;
       });
 
       button.appendChild(image);

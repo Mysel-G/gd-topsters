@@ -261,7 +261,17 @@ h3 {
   color: inherit;
   font: inherit;
   border: 0;
+  cursor: grab;
+  user-select: none;
   appearance: none;
+}
+
+.sidebar-addlvl-result > button:active {
+  cursor: grabbing;
+}
+
+.sidebar-addlvl-result > button.is-dragging {
+  opacity: 0.5;
 }
 
 .sidebar-addlvl-result > button:focus-visible {
@@ -469,6 +479,8 @@ input[type="range"]::-moz-range-progress {
 .main-grid {
   --cols: 5;
   --rows: 5;
+  --label-width: 240px;
+  --action-size: clamp(20px, calc(var(--tile) * 0.28), 30px);
   /* 
      fit 5x5 chart
      560px = sidebar 400 + container padding 40 + gaps 80 + grid padding 40
@@ -476,17 +488,18 @@ input[type="range"]::-moz-range-progress {
   */
   --tile: clamp(
     100px,
-    min(calc((100vw - 560px) / 5), calc((100dvh - 220px) / 5)),
+    min(calc((100vw - 820px) / 5), calc((100dvh - 220px) / 5)),
     260px
   );
   position: relative;
   display: grid;
-  grid-template-columns: repeat(var(--cols), var(--tile));
+  grid-template-columns: repeat(var(--cols), var(--tile)) var(--label-width);
   grid-auto-rows: var(--tile);
   gap: var(--grid-gap);
   width: max-content;
   min-width: calc(
-    var(--cols) * (var(--tile) + var(--grid-gap)) + var(--grid-gap)
+    var(--cols) * (var(--tile) + var(--grid-gap)) + var(--label-width) +
+      2 * var(--grid-gap)
   );
   min-height: calc(
     var(--rows) * (var(--tile) + var(--grid-gap)) + var(--grid-gap)
@@ -514,17 +527,11 @@ input[type="range"]::-moz-range-progress {
 }
 
 .main-grid > * {
-  position: relative;
   width: 100%;
-  height: 100%;
   min-width: 0;
-  overflow: hidden;
-  background: var(--placeholder);
-  border-radius: var(--tile-radius);
-  box-shadow: 2px 2px 4px rgb(0 0 0 / 60%);
 }
 
-.main-grid img {
+.grid-cell-media img {
   display: block;
   width: 100%;
   height: 100%;
@@ -533,31 +540,165 @@ input[type="range"]::-moz-range-progress {
 }
 
 .grid-cell {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
   padding: 0;
   color: inherit;
   font: inherit;
+  text-align: left;
+  background: transparent;
   border: 0;
-  appearance: none;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease-out,
-    outline-color 0.15s ease-out;
 }
 
-.grid-cell-empty {
+.grid-cell-media {
+  position: relative;
+  flex: 0 0 var(--tile);
+  width: 100%;
+  height: var(--tile);
+  padding: 0;
+  overflow: hidden;
   background: var(--placeholder);
+  border: 0;
+  border-radius: var(--tile-radius);
+  box-shadow: 2px 2px 4px rgb(0 0 0 / 60%);
 }
 
-.grid-cell-empty:hover {
+.grid-cell-media[draggable="true"] {
+  cursor: grab;
+}
+
+.grid-cell-media[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.grid-cell--dragging .grid-cell-media {
+  opacity: 0.45;
+}
+
+.grid-cell--empty .grid-cell-media {
+  cursor: pointer;
+  appearance: none;
+  transition: background-color 0.15s ease-out;
+}
+
+.grid-cell--empty .grid-cell-media:hover {
   background: #6a6a6a;
 }
 
-.grid-cell-empty:focus-visible {
+.grid-cell--empty .grid-cell-media:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
+}
+
+.grid-cell-media--missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  box-shadow:
+    inset 0 0 0 1px #333,
+    2px 2px 4px rgb(0 0 0 / 60%);
+}
+
+.grid-cell-fallback {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: center;
+  word-break: break-word;
+}
+
+.grid-row-labels {
+  display: flex;
+  min-width: 0;
+  padding: 0 2px;
+  overflow: hidden;
+}
+
+.grid-row-label-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+}
+
+.grid-row-label {
+  overflow: hidden;
+  color: var(--text-color);
+  font-size: clamp(10px, calc(var(--tile) * 0.15), 20px);
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grid-cell-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  left: 6px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+.grid-cell:hover .grid-cell-actions,
+.grid-cell:focus-within .grid-cell-actions {
+  opacity: 1;
+}
+
+.grid-cell-action {
+  display: grid;
+  place-items: center;
+  width: var(--action-size);
+  height: var(--action-size);
+  padding: 0;
+  color: #fff;
+  background: rgb(0 0 0 / 65%);
+  border: 0;
+  border-radius: 5px;
+  pointer-events: auto;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease-out,
+    color 0.15s ease-out;
+}
+
+.grid-cell-action:hover {
+  color: #000;
+  background: var(--accent);
+}
+
+.grid-cell-action svg {
+  pointer-events: none;
+}
+
+.grid-cell--drop-target .grid-cell-media {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.grid-cell-file {
+  display: none;
+}
+
+@media (hover: none) {
+  .grid-cell-actions {
+    opacity: 1;
+  }
 }
 
 /* Rounded corners checkbox drives the chart tiles (no JS) */
@@ -612,6 +753,7 @@ body:has(.sidebar-options-rounded-corners-checkbox:checked) .main-grid {
   .main-grid {
     /* The sidebar is below the chart at <= 1000px */
     --tile: clamp(120px, calc((100vw - 140px) / 5), 220px);
+    --label-width: 180px;
   }
 }
 
@@ -619,11 +761,43 @@ body:has(.sidebar-options-rounded-corners-checkbox:checked) .main-grid {
   .main-grid {
     --tile: 140px;
     --grid-gap: 10px;
+    --label-width: 130px;
   }
 
   .sidebar-addlvl-result {
     max-height: 35vh;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Toast
+   -------------------------------------------------------------------------- */
+
+.gd-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  z-index: 100;
+  max-width: min(90vw, 420px);
+  padding: 10px 16px;
+  color: #fff;
+  font-size: 0.85rem;
+  text-align: center;
+  background: #141414;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 45%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 10px);
+  transition:
+    opacity 0.18s ease-out,
+    transform 0.18s ease-out;
+}
+
+.gd-toast--visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 /* --------------------------------------------------------------------------
