@@ -1,0 +1,25 @@
+:root {
+  --ui-bg: #000;
+  --blue-bg: #0f9b8e;
+  --text-color: #fff;
+  --main-bg: #444;
+  --accent: coral;
+  --input-bg: #ccc;
+  --lightningcss-light: ;
+  --lightningcss-dark: initial;
+  color-scheme: dark;
+}
+
+#app {
+  color: var(--text-color);
+  scrollbar-color: var(--accent) black;
+  accent-color: var(--accent);
+  font-family: Nunito, sans-serif;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--main-bg);
+  min-height: 100vh;
+}

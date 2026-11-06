@@ -1,14 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-
-<body>
-
-</body>
-
+  <body class="main">
+    <section class="sidebar-container">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h1>GD Topster</h1>
+        </div>
+        <ul class="sidebar-action-list">
+          <li class="sidebar-action-item sidebar-action-item-active">
+            <button class="sidebar-action-btn sidebar-action-btn-active">
+              Add Level
+            </button>
+          </li>
+          <li class="sidebar-action-item">
+            <button class="sidebar-action-btn">Options</button>
+          </li>
+        </ul>
+        <div class="sidebar-action">
+          <!-- ADD LEVEL START -->
+          <div>
+            <input type="text" class="sidebar-addlvl-input" />
+            <button class="sidebar-addlvl-btn">Search</button>
+          </div>
+          <div class="sidebar-addlvl-result">
+            <!-- Add level result goes here -->
+          </div>
+          <!-- ADD LEVEL END -->
+          <!-- Options START -->
+          <div>
+            <div class="sidebar-option">
+              <p>Grid Options</p>
+              <div>
+                <p>Height</p>
+                <input
+                  type="range"
+                  class="sidebar-options-height-range"
+                  min="0"
+                  max="12"
+                />
+              </div>
+              <div>
+                <p>Width</p>
+                <input
+                  type="range"
+                  class="sidebar-options-width-range"
+                  min="0"
+                  max="12"
+                />
+            </div>
+            </div>
+            <div class="sidebar-option">
+              <p>Swap Creator and Level Name</p>
+              <input type="checkbox" class="sidebar-options-swap-name-checkbox" />
+            </div>
+            <div class="sidebar-option">
+              <p>Rounded Corners</p>
+              <input type="checkbox" class="sidebar-options-rounded-corners-checkbox" />
+            </div>
+          <!-- Options END -->
+        </div>
+      </div>
+    </section>
+    <section class="main-container"></section>
+  </body>
 </html>
