@@ -18,7 +18,7 @@ module.exports = async function handler(request, response) {
 
   const ids = String(url.searchParams.get("ids") || "")
     .split(",")
-    .map((id) => id.trim())
+    .map((id) => id)
     .filter((id) => /^\d+$/.test(id))
     .slice(0, 25);
 
